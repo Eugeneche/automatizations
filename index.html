@@ -52,7 +52,7 @@
       color: #4b5563;
       margin-bottom: 16px;
     }
-    .form-container, .results-container {
+    .form-container, .result-container {
       background-color: white;
       padding: 24px;
       border-radius: 8px;
@@ -100,7 +100,7 @@
     button:hover {
       background-color: #1d4ed8;
     }
-    #results.hidden, #map.hidden {
+    #result.hidden, #map.hidden {
       display: none;
     }
     #map {
@@ -144,8 +144,29 @@
       <h2>Логістичний помічник</h2>
       <p>Введіть початковий та кінцевий пункти, щоб отримати маршрут, відстань, номінальний і фактичний час, а також затримку.</p>
       
-      <!-- Form -->
-      <div class="form-container">
+
+    <!-- HTML форма Claude -->
+    <form id="routeForm">
+        <div>
+            <label for="startAddress">Початкова адреса:</label>
+            <input type="text" id="startAddress" name="startAddress" required>
+        </div>
+    
+        <div>
+            <label for="endAddress">Кінцева адреса:</label>
+            <input type="text" id="endAddress" name="endAddress" required>
+        </div>
+    
+        <div>
+            <label for="userEmail">Ваш email (для отримання результату):</label>
+            <input type="email" id="userEmail" name="userEmail" required>
+        </div>
+    
+        <button type="submit">Розрахувати маршрут</button>
+    </form>
+
+      <!-- Form Grok -->
+<!--       <div class="form-container">
         <div class="form-grid">
           <div>
             <label for="start">Початковий пункт</label>
@@ -157,30 +178,24 @@
           </div>
         </div>
         <button onclick="submitToMake()">Побудувати маршрут</button>
+      </div> -->
+
+      <!-- result -->
+      <div id="result" class="result-container hidden">
+
       </div>
 
-      <!-- Results -->
-      <div id="results" class="results-container hidden">
-        <h3>Результати</h3>
-        <p><strong>Відстань:</strong> <span id="distance"></span></p>
-        <p><strong>Номінальний час:</strong> <span id="duration"></span></p>
-        <p><strong>Фактичний час (з урахуванням трафіку):</strong> <span id="duration-in-traffic"></span></p>
-        <p><strong>Час затримки:</strong> <span id="delay"></span></p>
-      </div>
-
-      <!-- Map -->
-      <div id="map" class="hidden"></div>
     </section>
 
     <!-- Placeholder for Future Automations -->
-    <section id="future-automation-1">
+<!--     <section id="future-automation-1">
       <h2>Автоматизація 1</h2>
       <p>Місце для майбутньої автоматизації.</p>
     </section>
     <section id="future-automation-2">
       <h2>Автоматизація 2</h2>
       <p>Місце для майбутньої автоматизації.</p>
-    </section>
+    </section> -->
   </main>
 
   <!-- Footer -->
@@ -190,21 +205,57 @@
     </div>
   </footer>
 
-  <!-- Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+<script>
+    document.getElementById('routeForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const startAddress = document.getElementById('startAddress').value;
+        const endAddress = document.getElementById('endAddress').value;
+        const userEmail = document.getElementById('userEmail').value;
+
+        // Показати індикатор завантаження
+        document.getElementById('result').innerHTML = '<p>Розраховується маршрут...</p>';
+
+        // Відправка даних до Make.com webhook
+        fetch('https://hook.eu2.make.com/kxv0zpgeg6isxue7iwfta9k2k6si32of', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                start_address: startAddress,
+                end_address: endAddress,
+                user_email: userEmail,
+                timestamp: new Date().toISOString()
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = '<p>✅ Запит відправлено! Результат буде надіслано на вашу пошту.</p>';
+                // Очистити форму
+                document.getElementById('routeForm').reset();
+            })
+            .catch(error => {
+                console.error('Помилка:', error);
+                document.getElementById('result').innerHTML = '<p>❌ Помилка при відправці запиту. Спробуйте ще раз.</p>';
+            });
+    });
+</script>
+
+  <!-- Google Maps API Grok -->
+<!--   <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
   <script>
     let map, directionsService, directionsRenderer;
 
     function initMap() {
       map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 50.4501, lng: 30.5234 }, // Київ за замовчуванням
+        center: { lat: 50.4501, lng: 30.5234 }, 
         zoom: 8,
       });
       directionsService = new google.maps.DirectionsService();
       directionsRenderer = new google.maps.DirectionsRenderer();
       directionsRenderer.setMap(map);
 
-      // Ініціалізація автодоповнення
       const startInput = document.getElementById("start");
       const endInput = document.getElementById("end");
       new google.maps.places.Autocomplete(startInput);
@@ -220,8 +271,7 @@
         return;
       }
 
-      // Імітація запиту до Make.com (замініть на ваш webhook URL)
-      const makeWebhookUrl = "YOUR_MAKE_WEBHOOK_URL"; // Вставте URL вашого webhook з Make.com
+      const makeWebhookUrl = "YOUR_MAKE_WEBHOOK_URL"; 
       fetch(makeWebhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -229,14 +279,13 @@
       })
       .then(response => response.json())
       .then(data => {
-        // Очікуваний формат даних: { distance, duration, durationInTraffic, delay, startLocation, endLocation }
+      
         document.getElementById("distance").textContent = data.distance || "Немає даних";
         document.getElementById("duration").textContent = data.duration || "Немає даних";
         document.getElementById("duration-in-traffic").textContent = data.durationInTraffic || "Немає даних";
         document.getElementById("delay").textContent = data.delay || "Немає даних";
-        document.getElementById("results").classList.remove("hidden");
+        document.getElementById("result").classList.remove("hidden");
 
-        // Показ карти та побудова маршруту
         document.getElementById("map").classList.remove("hidden");
         directionsService.route(
           {
@@ -259,8 +308,8 @@
       });
     }
 
-    // Ініціалізація карти після завантаження сторінки
     window.onload = initMap;
-  </script>
+  </script> -->
+
 </body>
 </html>
