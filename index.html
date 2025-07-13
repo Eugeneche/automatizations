@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Демонстрація автоматизацій</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    nav {
+      background-color: #2563eb;
+      color: white;
+      padding: 16px;
+    }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav h1 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 16px;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    section {
+      margin: 32px 0;
+    }
+    section h2 {
+      font-size: 28px;
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+    section p {
+      color: #4b5563;
+      margin-bottom: 16px;
+    }
+    .form-container, .results-container {
+      background-color: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (min-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    label {
+      display: block;
+      color: #1f2937;
+      font-weight: medium;
+      margin-bottom: 8px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    #results.hidden, #map.hidden {
+      display: none;
+    }
+    #map {
+      height: 400px;
+      width: 100%;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-top: 24px;
+    }
+    @media (max-width: 640px) {
+      #map {
+        height: 300px;
+      }
+    }
+    footer {
+      background-color: #1f2937;
+      color: white;
+      padding: 16px;
+      text-align: center;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <h1>Демонстрація автоматизацій</h1>
+      <div>
+        <a href="#logistic-assistant">Логістичний помічник</a>
+        <a href="#future-automation-1">Автоматизація 1</a>
+        <a href="#future-automation-2">Автоматизація 2</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Logistic Assistant Section -->
+    <section id="logistic-assistant">
+      <h2>Логістичний помічник</h2>
+      <p>Введіть початковий та кінцевий пункти, щоб отримати маршрут, відстань, номінальний і фактичний час, а також затримку.</p>
+      
+      <!-- Form -->
+      <div class="form-container">
+        <div class="form-grid">
+          <div>
+            <label for="start">Початковий пункт</label>
+            <input id="start" type="text" placeholder="Введіть початковий пункт">
+          </div>
+          <div>
+            <label for="end">Кінцевий пункт</label>
+            <input id="end" type="text" placeholder="Введіть кінцевий пункт">
+          </div>
+        </div>
+        <button onclick="submitToMake()">Побудувати маршрут</button>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="results-container hidden">
+        <h3>Результати</h3>
+        <p><strong>Відстань:</strong> <span id="distance"></span></p>
+        <p><strong>Номінальний час:</strong> <span id="duration"></span></p>
+        <p><strong>Фактичний час (з урахуванням трафіку):</strong> <span id="duration-in-traffic"></span></p>
+        <p><strong>Час затримки:</strong> <span id="delay"></span></p>
+      </div>
+
+      <!-- Map -->
+      <div id="map" class="hidden"></div>
+    </section>
+
+    <!-- Placeholder for Future Automations -->
+    <section id="future-automation-1">
+      <h2>Автоматизація 1</h2>
+      <p>Місце для майбутньої автоматизації.</p>
+    </section>
+    <section id="future-automation-2">
+      <h2>Автоматизація 2</h2>
+      <p>Місце для майбутньої автоматизації.</p>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2025 Демонстрація автоматизацій. Усі права захищено.</p>
+    </div>
+  </footer>
+
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+  <script>
+    let map, directionsService, directionsRenderer;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 50.4501, lng: 30.5234 }, // Київ за замовчуванням
+        zoom: 8,
+      });
+      directionsService = new google.maps.DirectionsService();
+      directionsRenderer = new google.maps.DirectionsRenderer();
+      directionsRenderer.setMap(map);
+
+      // Ініціалізація автодоповнення
+      const startInput = document.getElementById("start");
+      const endInput = document.getElementById("end");
+      new google.maps.places.Autocomplete(startInput);
+      new google.maps.places.Autocomplete(endInput);
+    }
+
+    function submitToMake() {
+      const start = document.getElementById("start").value;
+      const end = document.getElementById("end").value;
+
+      if (!start || !end) {
+        alert("Будь ласка, введіть початковий та кінцевий пункти.");
+        return;
+      }
+
+      // Імітація запиту до Make.com (замініть на ваш webhook URL)
+      const makeWebhookUrl = "YOUR_MAKE_WEBHOOK_URL"; // Вставте URL вашого webhook з Make.com
+      fetch(makeWebhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startLocation: start, endLocation: end })
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Очікуваний формат даних: { distance, duration, durationInTraffic, delay, startLocation, endLocation }
+        document.getElementById("distance").textContent = data.distance || "Немає даних";
+        document.getElementById("duration").textContent = data.duration || "Немає даних";
+        document.getElementById("duration-in-traffic").textContent = data.durationInTraffic || "Немає даних";
+        document.getElementById("delay").textContent = data.delay || "Немає даних";
+        document.getElementById("results").classList.remove("hidden");
+
+        // Показ карти та побудова маршруту
+        document.getElementById("map").classList.remove("hidden");
+        directionsService.route(
+          {
+            origin: data.startLocation,
+            destination: data.endLocation,
+            travelMode: google.maps.TravelMode.DRIVING,
+          },
+          (response, status) => {
+            if (status === "OK") {
+              directionsRenderer.setDirections(response);
+            } else {
+              alert("Не вдалося побудувати маршрут: " + status);
+            }
+          }
+        );
+      })
+      .catch(error => {
+        console.error("Помилка при отриманні даних з Make.com:", error);
+        alert("Помилка при отриманні даних з Make.com.");
+      });
+    }
+
+    // Ініціалізація карти після завантаження сторінки
+    window.onload = initMap;
+  </script>
+</body>
+</html>
